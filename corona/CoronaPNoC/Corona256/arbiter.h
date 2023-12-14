@@ -1,0 +1,87 @@
+#ifndef __GLOBAL_ARBITER_H__
+#define __GLOBAL_ARBITER_H__
+
+//---------------------------------------------------------------------------
+
+#include <cassert>
+#include <queue>
+#include "GlobalTypeDefs.h"
+#include "circularbuffer.h"
+#include <iostream>     // std::cout
+#include <algorithm>    // std::sort
+#include <vector>       // std::vector
+
+
+using namespace std;
+
+//---------------------------------------------------------------------------
+
+SC_MODULE(TGlobalarbiter)
+{
+
+  // I/O Ports
+  sc_in_clk          clock;      // The input clock for the arbiter
+  sc_in_clk          photonic_clock;
+  sc_in<bool>        reset;      // The reset signal for the arbiter
+
+  /** Ports for communication with Arbiter  - START **/
+  
+  sc_in<TFlit>      req_tx_arbiter_flit[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y];
+  sc_in<bool>      req_tx_arbiter_hf[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack from arbiter to send data
+  sc_out<bool>      ack_tx_arbiter_hf[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack from arbiter to send data
+  bool              gwi_current_level_rx_req[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y];
+  
+  sc_out<bool>      req_rx_arbiter_ch[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack from arbiter to send data
+  sc_out<int>       mwsr_channel_send[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack to channel from arbiter to send data
+  sc_in<bool>       ack_rx_arbiter_ch[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack to arbiter after sending data
+  bool              gwi_current_level_tx_ch[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y];
+  
+  sc_in<bool>      req_txc_arbiter[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack from arbiter to send data
+  sc_in<bool>      ack_txc_arbiter[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack from arbiter to send data
+  sc_out<bool>      ack_txc_gwi[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y]; // ack from arbiter to send data
+  
+  /** Ports for communication with Arbiter  - END **/
+  
+  void proc_arbiter_req_rx();
+  void proc_arbiter_index_tx();
+  void print();
+   SC_CTOR(TGlobalarbiter)
+  {
+    SC_METHOD(proc_arbiter_req_rx);
+    sensitive << reset;
+    sensitive << photonic_clock.pos();
+    
+	SC_METHOD(print);
+    //sensitive << reset;
+    ////sensitive << photonic_clock.pos();
+     //for(int i=0; i<TGlobalParams::mesh_dim_x; i++)
+		  //{
+			  //for(int j=0; j<TGlobalParams::mesh_dim_y; j++)
+			  //{
+				  //sensitive <<  req_tx_arbiter_flit[i][j];
+			  //}
+		  //}
+    SC_METHOD(proc_arbiter_index_tx);
+    sensitive << reset;
+    sensitive << photonic_clock.pos();
+    //for(int i=0; i<TGlobalParams::mesh_dim_x; i++)
+		  //{
+			  //for(int j=0; j<TGlobalParams::mesh_dim_y; j++)
+			  //{
+				  //sensitive <<  req_tx_arbiter_flit[i][j];
+			  //}
+		  //}
+    
+     
+   }
+   
+  private:
+  std::vector<int>        reserve_req_queue[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y];
+  std::vector<int>		 temp_reserve_req_queue[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y];
+  vector<int>        data_ack_queue[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y];
+  int count[DEFAULT_MESH_DIM_X][DEFAULT_MESH_DIM_Y];
+  int temp_size; 
+  
+ };
+
+#endif

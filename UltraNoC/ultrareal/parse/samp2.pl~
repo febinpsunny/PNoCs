@@ -1,0 +1,4 @@
+my $string = " system.cpu11 T0 ";
+my $oneName = substr($string, 11, 2);
+print "$oneName\n";
+
